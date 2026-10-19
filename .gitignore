@@ -1,0 +1,15 @@
+# сборки
+bin/
+obj/
+artifacts/
+*.user
+.vs/
+# реальные отчёты и логи с данными системы — не коммитить
+reports/*
+!reports/development/
+reports/development/*
+!reports/development/.gitkeep
+logs/*
+!logs/development/
+*.nexora.json
+*.nexora.html
