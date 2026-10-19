@@ -16,16 +16,16 @@ public partial class App : Application
             return;
         }
 
-        var vm = new MainViewModel();
-        var window = new MainWindow { DataContext = vm };
-
         var smoke = Array.IndexOf(e.Args, "--smoke-test");
         if (smoke >= 0)
         {
-            var outDir = e.Args.Length > smoke + 1 ? e.Args[smoke + 1] : "smoke";
-            Shutdown(await SmokeTest.RunAsync(window, vm, outDir));
+            var outDir = e.Args.Length > smoke + 1 && !e.Args[smoke + 1].StartsWith("--", StringComparison.Ordinal) ? e.Args[smoke + 1] : "smoke";
+            Shutdown(await SmokeTest.RunAsync(outDir, e.Args.Contains("--with-scan")));
             return;
         }
+
+        var vm = new MainViewModel(new WpfDialogs());
+        var window = new MainWindow { DataContext = vm };
 
         MainWindow = window;
         window.Show();

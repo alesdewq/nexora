@@ -1,12 +1,62 @@
 <Window x:Class="Nexora.App.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="NEXORA" Width="1180" Height="760" MinWidth="820" MinHeight="520"
+        Title="NEXORA — диагностика Windows" Width="1180" Height="780" MinWidth="860" MinHeight="540"
         Background="{StaticResource Bg}" FontFamily="Segoe UI" FontSize="14"
         WindowStartupLocation="CenterScreen">
+  <Window.Resources>
+    <DataTemplate x:Key="FindingTemplate">
+      <Border Background="{StaticResource Surface}" BorderBrush="{StaticResource Border}" BorderThickness="1" CornerRadius="8" Margin="0,0,0,8">
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="5"/>
+            <ColumnDefinition Width="*"/>
+          </Grid.ColumnDefinitions>
+          <Border Background="{Binding AccentBrush}" CornerRadius="8,0,0,8"/>
+          <Expander Grid.Column="1" Padding="12,8,12,10" HorizontalContentAlignment="Stretch">
+            <Expander.Header>
+              <StackPanel Margin="4,0,0,0">
+                <WrapPanel>
+                  <Border BorderBrush="{Binding AccentBrush}" BorderThickness="1" CornerRadius="10" Padding="7,0" Margin="0,0,8,2" VerticalAlignment="Center">
+                    <TextBlock Foreground="{Binding AccentBrush}" FontSize="12">
+                      <Run Text="{Binding BadgeGlyph, Mode=OneWay}"/> <Run Text="{Binding BadgeText, Mode=OneWay}"/>
+                    </TextBlock>
+                  </Border>
+                  <TextBlock Text="{Binding Title}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,8,2"/>
+                  <TextBlock Text="{Binding KindText}" Style="{StaticResource Muted}" FontSize="12" VerticalAlignment="Center"/>
+                </WrapPanel>
+                <TextBlock Text="{Binding WhatFound}" Margin="0,2,0,0" MaxWidth="780" HorizontalAlignment="Left"/>
+              </StackPanel>
+            </Expander.Header>
+            <StackPanel Margin="28,2,0,0" MaxWidth="800" HorizontalAlignment="Left">
+              <TextBlock Style="{StaticResource Label}" Text="Почему это важно" Visibility="{Binding WhyItMatters, Converter={StaticResource NotEmpty}}"/>
+              <TextBlock Text="{Binding WhyItMatters}" Visibility="{Binding WhyItMatters, Converter={StaticResource NotEmpty}}"/>
+              <TextBlock Style="{StaticResource Label}" Text="Что рекомендуется сделать" Visibility="{Binding Recommendation, Converter={StaticResource NotEmpty}}"/>
+              <TextBlock Text="{Binding Recommendation}" Visibility="{Binding Recommendation, Converter={StaticResource NotEmpty}}"/>
+              <TextBlock Style="{StaticResource Label}" Text="Возможные последствия" Visibility="{Binding Consequences, Converter={StaticResource NotEmpty}}"/>
+              <TextBlock Text="{Binding Consequences}" Visibility="{Binding Consequences, Converter={StaticResource NotEmpty}}"/>
+              <TextBlock Style="{StaticResource Label}" Text="Надёжность и действие"/>
+              <TextBlock Text="{Binding ConfidenceText}"/>
+              <TextBlock Text="{Binding ActionText}" Visibility="{Binding ActionText, Converter={StaticResource NotEmpty}}"/>
+              <TextBlock Style="{StaticResource Label}" Text="Источник данных"/>
+              <TextBlock Text="{Binding EvidenceText}" FontFamily="Consolas" FontSize="12" Foreground="{StaticResource MutedBrush}"/>
+              <TextBlock Style="{StaticResource Label}" Text="Ограничения проверки" Visibility="{Binding HasLimitations, Converter={StaticResource BoolVis}}"/>
+              <TextBlock Text="{Binding LimitationsText}" Style="{StaticResource Muted}" Visibility="{Binding HasLimitations, Converter={StaticResource BoolVis}}"/>
+              <StackPanel Orientation="Horizontal" Margin="0,10,0,0" Visibility="{Binding CanMarkResolution, Converter={StaticResource BoolVis}}">
+                <TextBlock Text="Статус устранения:" VerticalAlignment="Center" Margin="0,0,8,0" Style="{StaticResource Muted}"/>
+                <ComboBox ItemsSource="{Binding ResolutionOptions}" SelectedValuePath="Key" DisplayMemberPath="Value"
+                          SelectedValue="{Binding Resolution}" MinWidth="170" AutomationProperties.Name="Статус устранения"/>
+              </StackPanel>
+            </StackPanel>
+          </Expander>
+        </Grid>
+      </Border>
+    </DataTemplate>
+  </Window.Resources>
+
   <Grid>
     <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="232"/>
+      <ColumnDefinition Width="236"/>
       <ColumnDefinition Width="*"/>
     </Grid.ColumnDefinitions>
 
@@ -20,6 +70,8 @@
                ScrollViewer.HorizontalScrollBarVisibility="Disabled" AutomationProperties.Name="Разделы">
         <ListBox.ItemContainerStyle>
           <Style TargetType="ListBoxItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="AutomationProperties.Name" Value="{Binding Title}"/>
             <Setter Property="Template">
               <Setter.Value>
                 <ControlTemplate TargetType="ListBoxItem">
@@ -27,48 +79,265 @@
                     <ContentPresenter/>
                   </Border>
                   <ControlTemplate.Triggers>
-                    <Trigger Property="IsMouseOver" Value="True">
-                      <Setter TargetName="Bd" Property="Background" Value="#18212F"/>
-                    </Trigger>
-                    <Trigger Property="IsSelected" Value="True">
-                      <Setter TargetName="Bd" Property="Background" Value="{StaticResource NavSelected}"/>
-                    </Trigger>
+                    <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Bd" Property="Background" Value="#18212F"/></Trigger>
+                    <Trigger Property="IsSelected" Value="True"><Setter TargetName="Bd" Property="Background" Value="{StaticResource NavSelected}"/></Trigger>
                   </ControlTemplate.Triggers>
                 </ControlTemplate>
               </Setter.Value>
             </Setter>
-            <Setter Property="AutomationProperties.Name" Value="{Binding Title}"/>
           </Style>
         </ListBox.ItemContainerStyle>
         <ListBox.ItemTemplate>
           <DataTemplate>
-            <StackPanel Orientation="Horizontal">
-              <TextBlock Text="{Binding Icon}" FontFamily="Segoe MDL2 Assets" FontSize="15" Width="26"
-                         Foreground="{StaticResource NavText}" VerticalAlignment="Center"/>
+            <DockPanel>
+              <Border DockPanel.Dock="Right" Background="#B45309" CornerRadius="9" Padding="7,0" VerticalAlignment="Center"
+                      Visibility="{Binding Badge, Converter={StaticResource NotEmpty}}" ToolTip="Замечаний уровня «средний» и выше">
+                <TextBlock Text="{Binding Badge}" Foreground="White" FontSize="11"/>
+              </Border>
+              <TextBlock Text="{Binding Icon}" FontFamily="Segoe MDL2 Assets" FontSize="15" Width="26" Foreground="{StaticResource NavText}" VerticalAlignment="Center"/>
               <TextBlock Text="{Binding Title}" Foreground="White" VerticalAlignment="Center"/>
-            </StackPanel>
+            </DockPanel>
           </DataTemplate>
         </ListBox.ItemTemplate>
       </ListBox>
     </DockPanel>
 
-    <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
-      <StackPanel Margin="36,30,36,30" MaxWidth="880" HorizontalAlignment="Left">
+    <ScrollViewer x:Name="ContentScroll" Grid.Column="1" VerticalScrollBarVisibility="Auto">
+      <StackPanel Margin="32,26,32,30" MaxWidth="980" HorizontalAlignment="Stretch">
         <TextBlock Text="{Binding Selected.Title}" FontSize="28" FontWeight="SemiBold"/>
-        <TextBlock Text="{Binding Selected.Purpose}" Foreground="{StaticResource Muted}" FontSize="15" Margin="0,6,0,22"/>
+        <TextBlock Text="{Binding Selected.Purpose}" Style="{StaticResource Muted}" FontSize="15" Margin="0,4,0,18"/>
 
-        <Border Background="{StaticResource WarnBg}" CornerRadius="8" Padding="16,12" Margin="0,0,0,16">
-          <TextBlock Text="{Binding Selected.StatusText}" Foreground="{StaticResource Warn}"/>
-        </Border>
+        <!-- Обзор: запуск проверки и сводка -->
+        <StackPanel Visibility="{Binding Selected.Section, Converter={StaticResource InSection}, ConverterParameter=Overview}">
+          <Border Style="{StaticResource Card}">
+            <StackPanel>
+              <WrapPanel>
+                <Button Content="Начать проверку" Style="{StaticResource Primary}" Command="{Binding ScanCommand}"/>
+                <TextBlock Text="Наблюдение за нагрузкой:" VerticalAlignment="Center" Margin="8,0,8,0" Style="{StaticResource Muted}"/>
+                <ComboBox ItemsSource="{Binding Durations}" SelectedItem="{Binding SelectedDuration}" MinWidth="120" VerticalAlignment="Center"
+                          IsEnabled="{Binding IsScanning, Converter={StaticResource NotEmpty}, ConverterParameter=invert}" AutomationProperties.Name="Длительность наблюдения"/>
+                <Button Content="Отменить" Command="{Binding CancelCommand}" Margin="12,0,0,0"
+                        Visibility="{Binding IsScanning, Converter={StaticResource BoolVis}}"/>
+              </WrapPanel>
+              <ProgressBar Value="{Binding ProgressValue, Mode=OneWay}" Height="6" Margin="0,12,0,6" Visibility="{Binding IsScanning, Converter={StaticResource BoolVis}}"/>
+              <TextBlock Text="{Binding ProgressText}" Style="{StaticResource Muted}" Margin="0,6,0,0"/>
+              <TextBlock Text="{Binding RightsText}" Style="{StaticResource Muted}" FontSize="12.5" Margin="0,6,0,0"/>
+            </StackPanel>
+          </Border>
+          <Border Style="{StaticResource Card}">
+            <StackPanel>
+              <TextBlock Text="Итог" FontWeight="SemiBold"/>
+              <TextBlock Text="{Binding Summary}" Margin="0,4,0,0"/>
+              <TextBlock Text="{Binding Counts}" Margin="0,8,0,0" Visibility="{Binding HasReport, Converter={StaticResource BoolVis}}"/>
+              <TextBlock Text="{Binding ReportInfo}" Style="{StaticResource Muted}" FontSize="12.5" Margin="0,8,0,0" Visibility="{Binding HasReport, Converter={StaticResource BoolVis}}"/>
+            </StackPanel>
+          </Border>
+          <TextBlock Text="Главное" Style="{StaticResource H2}" Visibility="{Binding HasReport, Converter={StaticResource BoolVis}}"/>
+          <TextBlock Style="{StaticResource Muted}" Margin="0,0,0,8" Visibility="{Binding HasReport, Converter={StaticResource BoolVis}}"
+                     Text="Замечания уровня «средний» и выше. Полные результаты — в разделах слева."/>
+        </StackPanel>
 
-        <Border Background="{StaticResource Surface}" BorderBrush="{StaticResource Border}" BorderThickness="1" CornerRadius="10" Padding="20,16">
-          <StackPanel>
-            <TextBlock Text="Итог проверки" FontWeight="SemiBold" Margin="0,0,0,6"/>
-            <TextBlock Text="{Binding Summary}" Foreground="{StaticResource Muted}"/>
+        <!-- Находки раздела -->
+        <ItemsControl ItemsSource="{Binding Selected.Findings}" ItemTemplate="{StaticResource FindingTemplate}"/>
+        <TextBlock Style="{StaticResource Muted}" Text="Результатов пока нет — запустите проверку в разделе «Обзор»."
+                   Visibility="{Binding HasReport, Converter={StaticResource NotEmpty}, ConverterParameter=invert}"/>
+
+        <!-- Производительность -->
+        <StackPanel Visibility="{Binding Selected.Section, Converter={StaticResource InSection}, ConverterParameter=Performance}">
+          <StackPanel Visibility="{Binding TopCpu.Count, Converter={StaticResource NotEmpty}}">
+            <TextBlock Text="Процессы: нагрузка на процессор" Style="{StaticResource H2}"/>
+            <DataGrid ItemsSource="{Binding TopCpu}">
+              <DataGrid.Columns>
+                <DataGridTextColumn Header="Процесс" Binding="{Binding Name}" Width="*"/>
+                <DataGridTextColumn Header="PID" Binding="{Binding Pid}"/>
+                <DataGridTextColumn Header="CPU в среднем" Binding="{Binding AvgCpu}"/>
+                <DataGridTextColumn Header="CPU максимум" Binding="{Binding MaxCpu}"/>
+                <DataGridTextColumn Header="Память" Binding="{Binding Memory}"/>
+              </DataGrid.Columns>
+            </DataGrid>
+            <TextBlock Text="Процессы: использование памяти" Style="{StaticResource H2}"/>
+            <DataGrid ItemsSource="{Binding TopMemory}">
+              <DataGrid.Columns>
+                <DataGridTextColumn Header="Процесс" Binding="{Binding Name}" Width="*"/>
+                <DataGridTextColumn Header="PID" Binding="{Binding Pid}"/>
+                <DataGridTextColumn Header="Память" Binding="{Binding Memory}"/>
+                <DataGridTextColumn Header="CPU в среднем" Binding="{Binding AvgCpu}"/>
+              </DataGrid.Columns>
+            </DataGrid>
+            <TextBlock Style="{StaticResource Muted}" FontSize="12.5" Text="CPU — доля от всей мощности процессора (все ядра = 100 %). Процессы без доступа (системные службы) видны только в общей загрузке."/>
           </StackPanel>
-        </Border>
+        </StackPanel>
 
-        <TextBlock Margin="0,22,0,0" Foreground="{StaticResource Muted}" FontSize="12.5"
+        <!-- Пользователи -->
+        <StackPanel Visibility="{Binding Selected.Section, Converter={StaticResource InSection}, ConverterParameter=Users}">
+          <StackPanel Visibility="{Binding Accounts.Count, Converter={StaticResource NotEmpty}}">
+            <TextBlock Text="Локальные учётные записи" Style="{StaticResource H2}"/>
+            <DataGrid ItemsSource="{Binding Accounts}">
+              <DataGrid.Columns>
+                <DataGridTextColumn Header="Имя" Binding="{Binding Name}" Width="*"/>
+                <DataGridTextColumn Header="Состояние" Binding="{Binding State}"/>
+                <DataGridTextColumn Header="Тип" Binding="{Binding Kind}"/>
+                <DataGridTextColumn Header="Администратор" Binding="{Binding Admin}"/>
+                <DataGridTextColumn Header="Последний вход" Binding="{Binding LastLogon}"/>
+              </DataGrid.Columns>
+            </DataGrid>
+            <TextBlock Style="{StaticResource Muted}" FontSize="12.5" Text="NEXORA не меняет учётные записи, пароли и группы."/>
+          </StackPanel>
+        </StackPanel>
+
+        <!-- Сеть -->
+        <StackPanel Visibility="{Binding Selected.Section, Converter={StaticResource InSection}, ConverterParameter=Network}">
+          <StackPanel Visibility="{Binding Listeners.Count, Converter={StaticResource NotEmpty}}">
+            <TextBlock Text="Прослушиваемые порты" Style="{StaticResource H2}"/>
+            <DataGrid ItemsSource="{Binding Listeners}">
+              <DataGrid.Columns>
+                <DataGridTextColumn Header="Протокол" Binding="{Binding Protocol}"/>
+                <DataGridTextColumn Header="Порт" Binding="{Binding Port}"/>
+                <DataGridTextColumn Header="Адрес" Binding="{Binding Address}"/>
+                <DataGridTextColumn Header="Доступность" Binding="{Binding Scope}"/>
+                <DataGridTextColumn Header="Процесс" Binding="{Binding Process}"/>
+                <DataGridTextColumn Header="Службы" Binding="{Binding Services}" Width="*"/>
+              </DataGrid.Columns>
+            </DataGrid>
+            <TextBlock Style="{StaticResource Muted}" FontSize="12.5" Text="«Все сетевые интерфейсы» означает, что порт принимает подключения из локальной сети, если это разрешает брандмауэр. Доступность из интернета зависит от роутера и здесь не проверяется."/>
+          </StackPanel>
+        </StackPanel>
+
+        <!-- Файлы и программы -->
+        <StackPanel Visibility="{Binding Selected.Section, Converter={StaticResource InSection}, ConverterParameter=FilesAndPrograms}">
+          <Border Background="{StaticResource WarnBg}" CornerRadius="8" Padding="14,10" Margin="0,8,0,4"
+                  Visibility="{Binding ActionStatus, Converter={StaticResource NotEmpty}}">
+            <TextBlock Text="{Binding ActionStatus}" Foreground="{StaticResource Warn}"/>
+          </Border>
+          <StackPanel Visibility="{Binding Categories.Count, Converter={StaticResource NotEmpty}}">
+            <TextBlock Text="Место на диске" Style="{StaticResource H2}"/>
+            <ItemsControl ItemsSource="{Binding Categories}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                      <DockPanel>
+                        <TextBlock DockPanel.Dock="Right" Text="{Binding Size}" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold"/>
+                      </DockPanel>
+                      <TextBlock Text="{Binding Details}" Style="{StaticResource Muted}" Margin="0,4,0,0"/>
+                      <TextBlock Text="{Binding Consequences}" Style="{StaticResource Muted}" FontSize="12.5" Margin="0,4,0,0"/>
+                      <TextBlock Text="{Binding LargestText}" FontFamily="Consolas" FontSize="12" Margin="0,8,0,0" TextWrapping="NoWrap"
+                                 Visibility="{Binding LargestText, Converter={StaticResource NotEmpty}}"/>
+                      <WrapPanel Margin="0,10,0,0">
+                        <Button Content="Очистить…" Command="{Binding DataContext.CleanCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                CommandParameter="{Binding}" Visibility="{Binding CanCleanFiles, Converter={StaticResource BoolVis}}"/>
+                        <Button Content="Очистить корзину…" Command="{Binding DataContext.EmptyRecycleBinCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                CommandParameter="{Binding}" Visibility="{Binding CanEmptyRecycleBin, Converter={StaticResource BoolVis}}"/>
+                      </WrapPanel>
+                    </StackPanel>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <CheckBox Content="Удалять временные файлы в корзину (можно восстановить)" IsChecked="{Binding CleanToRecycleBin}" Margin="0,0,0,4"/>
+
+            <TextBlock Text="Автозагрузка" Style="{StaticResource H2}"/>
+            <TextBlock Style="{StaticResource Muted}" FontSize="12.5" Margin="0,0,0,6"
+                       Text="Отключать можно записи текущего пользователя — тем же способом, что и в Диспетчере задач; запись не удаляется и включается обратно. Общие для компьютера записи и службы NEXORA не меняет."/>
+            <DataGrid ItemsSource="{Binding Autoruns}">
+              <DataGrid.Columns>
+                <DataGridTextColumn Header="Название" Binding="{Binding Name}" Width="180"/>
+                <DataGridTextColumn Header="Где" Binding="{Binding Where}"/>
+                <DataGridTextColumn Header="Состояние" Binding="{Binding State}"/>
+                <DataGridTextColumn Header="Подпись" Binding="{Binding Signature}"/>
+                <DataGridTextColumn Header="Команда" Binding="{Binding Command}" Width="*"/>
+                <DataGridTemplateColumn Header="">
+                  <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+                      <Button Content="{Binding ToggleText}" Padding="8,2" Margin="2"
+                              Command="{Binding DataContext.ToggleAutorunCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}"
+                              Visibility="{Binding CanToggle, Converter={StaticResource BoolVis}}"/>
+                    </DataTemplate>
+                  </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+              </DataGrid.Columns>
+            </DataGrid>
+
+            <TextBlock Text="Установленные программы" Style="{StaticResource H2}"/>
+            <TextBlock Style="{StaticResource Muted}" FontSize="12.5" Margin="0,0,0,6"
+                       Text="Удаление запускает штатный деинсталлятор программы. NEXORA не считает программу ненужной по возрасту или размеру — решение за вами."/>
+            <DataGrid ItemsSource="{Binding Programs}">
+              <DataGrid.Columns>
+                <DataGridTextColumn Header="Программа" Binding="{Binding Name}" Width="*"/>
+                <DataGridTextColumn Header="Версия" Binding="{Binding Version}"/>
+                <DataGridTextColumn Header="Издатель" Binding="{Binding Publisher}"/>
+                <DataGridTextColumn Header="Установлена" Binding="{Binding Installed}"/>
+                <DataGridTemplateColumn Header="">
+                  <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+                      <Button Content="Удалить…" Padding="8,2" Margin="2"
+                              Command="{Binding DataContext.UninstallCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}"
+                              Visibility="{Binding CanUninstall, Converter={StaticResource BoolVis}}"/>
+                    </DataTemplate>
+                  </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+              </DataGrid.Columns>
+            </DataGrid>
+            <Button Content="Открыть журнал действий" Command="{Binding OpenJournalCommand}" HorizontalAlignment="Left"/>
+          </StackPanel>
+        </StackPanel>
+
+        <!-- Отчёты -->
+        <StackPanel Visibility="{Binding Selected.Section, Converter={StaticResource InSection}, ConverterParameter=Reports}">
+          <Border Style="{StaticResource Card}">
+            <StackPanel>
+              <TextBlock Text="Экспорт текущего отчёта" FontWeight="SemiBold"/>
+              <TextBlock Style="{StaticResource Muted}" Margin="0,4,0,10"
+                         Text="Отчёт содержит факты, риски, рекомендации, уровень уверенности, источники данных и ограничения проверки. Он может включать имена учётных записей, имя компьютера, локальные адреса и пути к файлам."/>
+              <CheckBox Content="Скрыть имя компьютера, имена пользователей, IP- и MAC-адреса" IsChecked="{Binding MaskOnExport}" Margin="0,0,0,10"/>
+              <WrapPanel>
+                <Button Content="Сохранить HTML…" Style="{StaticResource Primary}" Command="{Binding ExportHtmlCommand}"/>
+                <Button Content="Сохранить JSON…" Command="{Binding ExportJsonCommand}"/>
+                <Button Content="Папка отчётов" Command="{Binding OpenReportsFolderCommand}"/>
+              </WrapPanel>
+              <TextBlock Style="{StaticResource Muted}" FontSize="12.5" Margin="0,10,0,0">
+                <Run Text="Каждая проверка автоматически сохраняется локально:"/> <Run Text="{Binding ReportsFolder, Mode=OneWay}"/>
+              </TextBlock>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+
+        <!-- История -->
+        <StackPanel Visibility="{Binding Selected.Section, Converter={StaticResource InSection}, ConverterParameter=History}">
+          <Border Style="{StaticResource Card}">
+            <StackPanel>
+              <TextBlock Text="Сравнение двух проверок" FontWeight="SemiBold"/>
+              <WrapPanel Margin="0,8,0,0">
+                <TextBlock Text="Раньше:" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                <ComboBox ItemsSource="{Binding History}" SelectedItem="{Binding CompareOlder}" MinWidth="260" Margin="0,0,12,0" AutomationProperties.Name="Более ранний отчёт"/>
+                <TextBlock Text="Позже:" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                <ComboBox ItemsSource="{Binding History}" SelectedItem="{Binding CompareNewer}" MinWidth="260" Margin="0,0,12,0" AutomationProperties.Name="Более поздний отчёт"/>
+                <Button Content="Сравнить" Command="{Binding CompareCommand}"/>
+              </WrapPanel>
+              <TextBlock Text="{Binding ComparisonText}" Margin="0,12,0,0"/>
+            </StackPanel>
+          </Border>
+          <TextBlock Text="Сохранённые проверки" Style="{StaticResource H2}"/>
+          <DataGrid ItemsSource="{Binding History}">
+            <DataGrid.Columns>
+              <DataGridTextColumn Header="Дата" Binding="{Binding Date}"/>
+              <DataGridTextColumn Header="Итог" Binding="{Binding Issues}"/>
+              <DataGridTextColumn Header="Сводка" Binding="{Binding Summary}" Width="*"/>
+              <DataGridTemplateColumn Header="">
+                <DataGridTemplateColumn.CellTemplate>
+                  <DataTemplate>
+                    <Button Content="Открыть" Padding="8,2" Margin="2"
+                            Command="{Binding DataContext.OpenHistoryCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}"/>
+                  </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+              </DataGridTemplateColumn>
+            </DataGrid.Columns>
+          </DataGrid>
+          <Button Content="Обновить список" Command="{Binding RefreshHistoryCommand}" HorizontalAlignment="Left"/>
+        </StackPanel>
+
+        <TextBlock Margin="0,24,0,0" Style="{StaticResource Muted}" FontSize="12"
                    Text="NEXORA не меняет систему без вашего явного подтверждения и не отправляет данные в сеть. Отсутствие замечаний не означает, что компьютер безопасен."/>
       </StackPanel>
     </ScrollViewer>

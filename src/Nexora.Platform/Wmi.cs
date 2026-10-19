@@ -14,7 +14,28 @@ public static class Wmi
 
     public static string Source(string ns, string cls) => $"WMI {ns}: {cls}";
 
+    /// <summary>
+    /// Пространства имён, в которых уже получен отказ в доступе. При ограниченном токене каждый отказ WMI может занимать
+    /// секунды; повторять их нет смысла — следующие запросы сразу получают ту же причину.
+    /// </summary>
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, bool> Denied = new(StringComparer.OrdinalIgnoreCase);
+
     public static List<ManagementBaseObject> Query(string ns, string wql, TimeSpan? timeout = null)
+    {
+        if (Denied.ContainsKey(ns)) throw new UnauthorizedAccessException($"WMI {ns}: доступ запрещён");
+        try { return QueryCore(ns, wql, timeout); }
+        catch (Exception ex) when (IsAccessDenied(ex))
+        {
+            Denied[ns] = true;
+            throw;
+        }
+    }
+
+    private static bool IsAccessDenied(Exception ex) => ex is UnauthorizedAccessException
+        || ex is ManagementException { ErrorCode: ManagementStatus.AccessDenied }
+        || ex is System.Runtime.InteropServices.COMException { HResult: unchecked((int)0x80070005) };
+
+    private static List<ManagementBaseObject> QueryCore(string ns, string wql, TimeSpan? timeout)
     {
         var scope = new ManagementScope(ns);
         var options = new System.Management.EnumerationOptions { Timeout = timeout ?? TimeSpan.FromSeconds(60), ReturnImmediately = true, Rewindable = false };

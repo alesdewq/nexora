@@ -103,7 +103,7 @@ public static partial class NetworkCollector
                 l.Add(s.Str("Name") ?? "?");
             }
         }
-        catch (System.Management.ManagementException) { /* привязка к службам необязательна */ }
+        catch (Exception ex) when (ex is System.Management.ManagementException or UnauthorizedAccessException or COMException) { /* привязка к службам необязательна */ }
 
         var names = new Dictionary<int, (string?, string?)>();
         foreach (var r in raw.Distinct())
