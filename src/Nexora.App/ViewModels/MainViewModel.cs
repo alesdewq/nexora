@@ -160,6 +160,17 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         FillTables(live ? _scan : null);
     }
 
+    /// <summary>Показать готовый результат (демонстрационные данные): список программ с реальной системы при этом не читается.</summary>
+    public void ShowDemo(ScanResult scan)
+    {
+        _scan = scan;
+        _demo = true;
+        ShowReport(scan.Document, live: true);
+        ProgressText = "Демонстрационные данные вымышленного компьютера.";
+    }
+
+    private bool _demo;
+
     private void FillTables(ScanResult? scan)
     {
         TopCpu.Clear(); TopMemory.Clear(); Accounts.Clear(); Listeners.Clear(); Categories.Clear(); Programs.Clear(); Autoruns.Clear();
@@ -178,6 +189,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         if (scan.Network is { } net && net.Listeners.TryGetValue(out var socks))
             foreach (var l in socks.OrderBy(x => x.IsLoopbackOnly).ThenBy(x => x.Protocol).ThenBy(x => x.Port)) Listeners.Add(ListenerRow.From(l));
         foreach (var c in scan.Cleanup?.Categories ?? []) Categories.Add(new CategoryRow(c));
+        if (!_demo)
         try
         {
             foreach (var e in InstalledPrograms.ReadEntries().GroupBy(e => (e.Program.Name, e.Program.Version)).Select(g => g.First())

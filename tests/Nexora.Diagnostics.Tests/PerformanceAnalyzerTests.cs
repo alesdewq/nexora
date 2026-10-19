@@ -155,3 +155,14 @@ public class PerformanceAnalyzerTests
         Assert.Equal(results.Count, results.Select(r => r.Id).Distinct().Count());
     }
 }
+
+public class PluralTests
+{
+    [Theory]
+    [InlineData(1, "1 раз")]
+    [InlineData(2, "2 раза")]
+    [InlineData(5, "5 раз")]
+    [InlineData(12, "12 раз")]
+    [InlineData(22, "22 раза")]
+    public void Times(int n, string expected) => Assert.Equal(expected, PerformanceAnalyzer.Times(n));
+}

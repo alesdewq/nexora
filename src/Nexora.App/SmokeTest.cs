@@ -21,7 +21,7 @@ namespace Nexora.App;
 /// </summary>
 internal static class SmokeTest
 {
-    public static async Task<int> RunAsync(string outDir, bool withScan)
+    public static async Task<int> RunAsync(string outDir, bool withScan, bool demo = false)
     {
         var log = new List<string>();
         var temp = Directory.CreateTempSubdirectory("nexora-smoke-");
@@ -42,7 +42,12 @@ internal static class SmokeTest
             };
             window.Show();
 
-            if (withScan)
+            if (demo)
+            {
+                vm.ShowDemo(DemoData.Build());
+                log.Add($"demo: {vm.Summary}");
+            }
+            else if (withScan)
             {
                 await vm.ScanAsync(new ScanOptions(TimeSpan.FromSeconds(4)) { IncludeDrivers = false });
                 log.Add($"scan: {vm.ProgressText}");

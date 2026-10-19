@@ -200,7 +200,7 @@ public static class PerformanceAnalyzer
         var shut = e.Groups.Where(g => g.Category == EventCategory.UnexpectedShutdown).ToList();
         if (shut.Count > 0)
             yield return CheckResult.Finding("perf.events.shutdown", "Неожиданные выключения", Section.Performance, Severity.Medium, FindingKind.Fact, Confidence.High,
-                $"За {e.Days} дн. компьютер {shut.Sum(g => g.Count)} раз выключался или перезагружался некорректно.",
+                $"За {e.Days} дн. компьютер {Times(shut.Sum(g => g.Count))} выключался или перезагружался некорректно.",
                 "Причинами бывают перегрев, проблемы питания или батареи, зависания и принудительное выключение кнопкой.",
                 "Вспомните, не выключали ли вы компьютер кнопкой; если нет — сопоставьте время событий с нагрузкой и температурой.",
                 new Evidence(SrcEvents, List(shut))) with { Limitations = limits };
@@ -208,6 +208,9 @@ public static class PerformanceAnalyzer
             yield return CheckResult.Ok("perf.events.shutdown", "Неожиданные выключения", Section.Performance,
                 $"За {e.Days} дн. неожиданных выключений не зарегистрировано.", new Evidence(SrcEvents, "нет событий")) with { Limitations = limits };
     }
+
+    /// <summary>«1 раз», «2 раза», «5 раз».</summary>
+    public static string Times(int n) => (n % 100 is >= 12 and <= 14) || n % 10 is < 2 or > 4 ? $"{n} раз" : $"{n} раза";
 
     private static string TopText(IEnumerable<ProcessUsage> list, Func<ProcessUsage, string> f) => string.Join(", ", list.Take(3).Select(f));
     private static string Secs(TimeSpan t) => t.TotalSeconds < 120 ? $"{t.TotalSeconds:0} с" : $"{t.TotalMinutes:0.#} мин";

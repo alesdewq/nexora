@@ -20,7 +20,7 @@ public partial class App : Application
         if (smoke >= 0)
         {
             var outDir = e.Args.Length > smoke + 1 && !e.Args[smoke + 1].StartsWith("--", StringComparison.Ordinal) ? e.Args[smoke + 1] : "smoke";
-            Shutdown(await SmokeTest.RunAsync(outDir, e.Args.Contains("--with-scan")));
+            Shutdown(await SmokeTest.RunAsync(outDir, e.Args.Contains("--with-scan"), e.Args.Contains("--demo")));
             return;
         }
 

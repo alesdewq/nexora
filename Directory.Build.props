@@ -8,7 +8,7 @@
     <Deterministic>true</Deterministic>
     <Company>NEXORA</Company>
     <Product>NEXORA</Product>
-    <Version>0.1.0</Version>
+    <Version>0.9.0</Version>
     <NeutralLanguage>ru-RU</NeutralLanguage>
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
