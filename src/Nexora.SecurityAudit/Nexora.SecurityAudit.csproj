@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Модели и правила аудита безопасности: пользователи/группы, Defender, брандмауэр, UAC, BitLocker, удалённый доступ,
+       автозагрузка, оценка признаков вредоносного ПО (пространство имён Malware). Без обращений к системе. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Nexora.Core\Nexora.Core.csproj" />
+  </ItemGroup>
+</Project>
