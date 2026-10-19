@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Локальный сетевой аудит: прослушиваемые порты, процессы, правила брандмауэра. Только этот компьютер, без сканирования сети. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Nexora.Core\Nexora.Core.csproj" />
+    <ProjectReference Include="..\Nexora.SecurityAudit\Nexora.SecurityAudit.csproj" />
+  </ItemGroup>
+</Project>

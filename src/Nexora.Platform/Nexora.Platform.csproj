@@ -9,6 +9,7 @@
     <ProjectReference Include="..\Nexora.Core\Nexora.Core.csproj" />
     <ProjectReference Include="..\Nexora.Diagnostics\Nexora.Diagnostics.csproj" />
     <ProjectReference Include="..\Nexora.SecurityAudit\Nexora.SecurityAudit.csproj" />
+    <ProjectReference Include="..\Nexora.NetworkAudit\Nexora.NetworkAudit.csproj" />
     <PackageReference Include="System.Management" />
     <PackageReference Include="System.Diagnostics.EventLog" />
   </ItemGroup>
