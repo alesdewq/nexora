@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>NEXORA — диагностика Windows</title>
-<meta name="description" content="NEXORA — офлайн-приложение для Windows 10/11: диагностика тормозов и перегрева, инвентаризация, базовый аудит безопасности, честный отчёт. В разработке.">
+<meta name="description" content="NEXORA 0.9.0 — портативное офлайн-приложение для Windows 10/11: диагностика тормозов и перегрева, сведения о системе, базовый аудит безопасности, безопасная очистка с подтверждением, честный отчёт HTML/JSON.">
 <meta name="theme-color" content="#0b0d12">
 <style>
   :root {
@@ -55,39 +55,73 @@
   @media (max-width:820px){.grid{grid-template-columns:1fr 1fr}.principles{grid-template-columns:1fr}}
   @media (max-width:560px){.wrap{padding:0 16px}.grid{grid-template-columns:1fr}header{padding:28px 0 16px}
     .hide-sm{display:none}}
+
+  .dl-card{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center;background:var(--surface);border:1px solid rgba(94,234,212,.4);
+           border-radius:var(--radius);padding:22px;margin-top:24px}
+  .dl-card h3{margin:0 0 4px;font-size:19px}.dl-card p{margin:0;color:var(--muted);font-size:14.5px}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:12px 18px;border-radius:12px;background:var(--accent);color:#04201c;font-weight:700;white-space:nowrap}
+  .btn:hover{text-decoration:none;filter:brightness(1.08)}
+  .hash{margin-top:10px;font-family:var(--mono);font-size:11.5px;color:var(--faint);word-break:break-all}
+  .shots{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+  .shots figure{margin:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+  .shots img{width:100%;height:auto;display:block}
+  .shots figcaption{padding:10px 14px;font-size:13.5px;color:var(--muted)}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .list{margin:0;padding-left:18px;color:var(--muted);font-size:14.5px}.list li{margin:4px 0}
+  .warn-card{border-color:rgba(251,191,36,.35)}
+  @media (max-width:820px){.shots,.two{grid-template-columns:1fr}.dl-card{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <nav><a class="brand" href="/">Jarvis</a><a href="/shop/">RedactX</a><a href="/nexora/" aria-current="page">NEXORA</a></nav>
+  <nav><a class="brand" href="/">Jarvis</a><a href="/shop/">RedactX</a><a href="/nexora/" aria-current="page">NEXORA</a><a href="/nexora/guide.html">Руководство</a></nav>
 
   <header>
     <h1><span>NEXORA</span></h1>
     <p class="lead">Офлайн-приложение для Windows 10/11: почему компьютер тормозит и греется, что в нём установлено
       и насколько базово защищена система — с честным отчётом, где факт отделён от подозрения.</p>
-    <div class="pill"><i></i>В разработке · готов этап 1 из 9: каркас приложения · скачать пока нечего</div>
+    <div class="pill"><i style="background:var(--ok)"></i>Версия 0.9.0 · MVP · все 9 этапов выполнены · 220 автоматических тестов</div>
+
+    <div class="dl-card">
+      <div>
+        <h3>NEXORA 0.9.0 для Windows 10/11 x64</h3>
+        <p>Портативная программа: распакуйте ZIP и запустите <b>Nexora.exe</b>. Установка, права администратора и .NET не нужны. 57 МБ.</p>
+        <div class="hash">SHA256: 3b496c2b5417bde5b84c12729ae1035342dfc75987f4062898adb114dd0bc7c3</div>
+      </div>
+      <a class="btn" href="files/NEXORA-0.9.0-win-x64.zip" download>⬇ Скачать ZIP</a>
+    </div>
+    <p class="note">Программа не подписана сертификатом — Windows SmartScreen может предупредить о неизвестном издателе. Сверьте SHA256 архива.
+      Это первая версия: проверена на Windows 10 22H2; на Windows 11 ещё не проверялась.</p>
   </header>
 
-  <h2>Что будет проверять</h2>
+  <h2>Как выглядит</h2>
+  <div class="shots">
+    <figure><img src="img/overview.png" alt="Раздел «Обзор»: итог проверки и главные замечания" loading="lazy" width="1028" height="753"><figcaption>Обзор: итог и главное. Данные вымышленного компьютера.</figcaption></figure>
+    <figure><img src="img/security.png" alt="Раскрытая карточка находки: почему важно, что делать, надёжность, источник" loading="lazy" width="1028" height="753"><figcaption>Каждая находка: почему важно, что делать, надёжность, источник данных, ограничения.</figcaption></figure>
+    <figure><img src="img/performance.png" alt="Раздел «Производительность»" loading="lazy" width="1028" height="753"><figcaption>Производительность: память, температура, снижение частоты, журнал.</figcaption></figure>
+    <figure><img src="img/files.png" alt="Раздел «Файлы и программы»" loading="lazy" width="1028" height="753"><figcaption>Файлы: сначала просмотр, очистка — только по кнопке и с подтверждением.</figcaption></figure>
+  </div>
+
+  <h2>Что проверяет</h2>
   <div class="grid">
-    <div class="card"><div class="num">01</div><h3>Инвентаризация</h3><p>Версия и сборка Windows, CPU, RAM, диски, сетевые адаптеры, программы, обновления, драйверы, время работы.</p></div>
-    <div class="card"><div class="num">02</div><h3>Тормоза и перегрев</h3><p>Нагрузка CPU/RAM/диска по процессам за время наблюдения; устойчивая проблема против короткого пика. Температура — только из реального датчика.</p></div>
-    <div class="card"><div class="num">03</div><h3>Пользователи и права</h3><p>Локальные учётные записи и группы, кто входит в «Администраторы», лишние права как повод для проверки.</p></div>
-    <div class="card"><div class="num">04</div><h3>Безопасность Windows</h3><p>Defender и сигнатуры, брандмауэр, UAC, BitLocker, RDP/SMB/WinRM, автозагрузка, задачи и службы — с учётом контекста.</p></div>
-    <div class="card"><div class="num">05</div><h3>Сеть (локально)</h3><p>Какие порты слушает компьютер, каким процессом и службой; правила брандмауэра. Другие устройства не сканируются.</p></div>
-    <div class="card"><div class="num">06</div><h3>Файлы и отчёт</h3><p>Предпросмотр временных и крупных файлов без удаления; отчёт HTML/JSON и сравнение проверок во времени.</p></div>
+    <div class="card"><div class="num">01</div><h3>Сведения о системе</h3><p>Редакция и сборка Windows со сроком поддержки, процессор, память, диски и их состояние, сеть, программы, обновления, драйверы, устройства с ошибками.</p></div>
+    <div class="card"><div class="num">02</div><h3>Тормоза и перегрев</h3><p>Нагрузка CPU, памяти и диска по процессам за 30 с – 5 мин; короткий пик отличается от устойчивой проблемы. Температура — только из реального датчика, снижение частоты, ошибки дисков в журнале.</p></div>
+    <div class="card"><div class="num">03</div><h3>Пользователи и права</h3><p>Локальные учётные записи, кто входит в «Администраторы» (по SID — на любой локализации), гость и встроенный администратор.</p></div>
+    <div class="card"><div class="num">04</div><h3>Безопасность Windows</h3><p>Defender или сторонний антивирус, базы, исключения, брандмауэр по профилям, UAC, BitLocker, RDP, SMB1, WinRM, автозагрузка с эвристиками, обнаружения Defender.</p></div>
+    <div class="card"><div class="num">05</div><h3>Сеть (только этот компьютер)</h3><p>Какие порты слушает компьютер, каким процессом и службой, что разрешает брандмауэр. Другие устройства не сканируются.</p></div>
+    <div class="card"><div class="num">06</div><h3>Отчёт и история</h3><p>HTML и JSON с маскированием имён и адресов, локальная история, сравнение проверок, отметки «устранено».</p></div>
   </div>
 
   <h2>Принципы</h2>
   <ul class="principles">
-    <li><b>Сначала только чтение.</b> Диагностика ничего не меняет в системе.</li>
-    <li><b>Ничего не выдумывает.</b> Нет данных — пишет «данные недоступны».</li>
-    <li><b>Факт ≠ подозрение.</b> Каждый вывод — с источником, уверенностью и ограничениями.</li>
-    <li><b>Без сети.</b> Ни телеметрии, ни облака, ни скрытых соединений.</li>
+    <li><b>Проверка только читает.</b> Ничего не меняет в системе.</li>
+    <li><b>Ничего не выдумывает.</b> Нет данных — «не удалось проверить» с причиной.</li>
+    <li><b>Факт ≠ подозрение.</b> У каждого вывода — источник, надёжность и ограничения.</li>
+    <li><b>Без сети.</b> Проверено измерением: 0 сетевых подключений за всю проверку.</li>
     <li><b>Не отключает защиту.</b> Defender, брандмауэр и обновления не трогает.</li>
-    <li><b>Без администратора</b> для обычного просмотра.</li>
-    <li><b>Очистка — отдельно</b>, с подтверждением каждой операции и журналом.</li>
-    <li><b>Не обещает невозможного:</b> «проблем не найдено» ≠ «система безопасна».</li>
+    <li><b>Без администратора</b> для обычной работы.</li>
+    <li><b>Действия — только с подтверждением:</b> очистка временных файлов (в корзину), корзина, автозагрузка (обратимо), штатный деинсталлятор. Всё пишется в журнал.</li>
+    <li><b>Не обещает невозможного:</b> «проблем не найдено» ≠ «система безопасна». Это не антивирус.</li>
   </ul>
 
   <h2>Уровни результатов</h2>
@@ -95,7 +129,23 @@
     <span class="s1">Критический</span><span class="s2">Высокий</span><span class="s3">Средний</span>
     <span class="s4">Низкий / информационный</span><span class="s5">Не удалось проверить</span>
   </div>
-  <p class="note">Цвет — только подсказка: у каждого результата есть текст «что обнаружено, почему важно, насколько надёжно, что делать».</p>
+  <p class="note">Цвет — только подсказка: уровень всегда подписан текстом и значком.</p>
+
+  <h2>Честно о проверке</h2>
+  <div class="two">
+    <div class="card"><h3>Проверено</h3><ul class="list">
+      <li>220 автоматических тестов: логика оценки, пути и ссылки, отчёты, маскирование, сравнение.</li>
+      <li>Реальная система Windows 10 22H2 с правами администратора и с ограниченным токеном.</li>
+      <li>Опубликованный exe: запуск, все разделы, настоящая проверка.</li>
+      <li>Действия без подтверждения не выполняются; удаление — только во временных папках тестов.</li>
+    </ul></div>
+    <div class="card warn-card"><h3>Пока не проверено</h3><ul class="list">
+      <li>Windows 11 и другие языки Windows.</li>
+      <li>Обычная учётная запись с UAC (без прав администратора) в интерактивном сеансе.</li>
+      <li>Высокий масштаб экрана, работа с экранным диктором.</li>
+      <li>Компьютеры со сторонним антивирусом, BitLocker, в домене — только на синтетических данных.</li>
+    </ul></div>
+  </div>
 
   <h2>Дорожная карта</h2>
   <div class="tbl"><table>
@@ -103,22 +153,18 @@
     <tbody>
       <tr><td>0</td><td>План, архитектура, документация</td><td><span class="st done">готово</span></td></tr>
       <tr><td>1</td><td>Каркас WPF-приложения, сборка и тесты</td><td><span class="st done">готово</span></td></tr>
-      <tr><td>2</td><td>Инвентаризация системы (только чтение)</td><td><span class="st now">следующий</span></td></tr>
-      <tr><td>3</td><td>Производительность и процессы</td><td><span class="st">ожидает</span></td></tr>
-      <tr><td>4</td><td>Пользователи, группы, базовая безопасность</td><td><span class="st">ожидает</span></td></tr>
-      <tr><td>5</td><td>Локальный сетевой аудит</td><td><span class="st">ожидает</span></td></tr>
-      <tr><td>6</td><td>Отчёты HTML/JSON и экран результатов</td><td><span class="st">ожидает</span></td></tr>
-      <tr><td>7</td><td>Предпросмотр очистки без удаления</td><td><span class="st">ожидает</span></td></tr>
-      <tr><td>8</td><td>Безопасная очистка</td><td><span class="st lock">после отдельного согласования</span></td></tr>
-      <tr><td>9</td><td>Тесты, документация, установщик</td><td><span class="st">ожидает</span></td></tr>
+      <tr><td>2</td><td>Инвентаризация системы (только чтение)</td><td><span class="st done">готово</span></td></tr>
+      <tr><td>3</td><td>Производительность и процессы</td><td><span class="st done">готово</span></td></tr>
+      <tr><td>4</td><td>Пользователи, группы, безопасность</td><td><span class="st done">готово</span></td></tr>
+      <tr><td>5</td><td>Локальный сетевой аудит</td><td><span class="st done">готово</span></td></tr>
+      <tr><td>6</td><td>Отчёты HTML/JSON и интерфейс</td><td><span class="st done">готово</span></td></tr>
+      <tr><td>7</td><td>Предпросмотр очистки без удаления</td><td><span class="st done">готово</span></td></tr>
+      <tr><td>8</td><td>Безопасная очистка с подтверждением и журналом</td><td><span class="st done">готово</span></td></tr>
+      <tr><td>9</td><td>Тесты, документация, выпуск</td><td><span class="st done">готово</span> <span class="st">без установщика и подписи</span></td></tr>
     </tbody>
   </table></div>
 
-  <h2>Платформа</h2>
-  <p style="color:var(--muted);margin:0">Windows 10 22H2 и Windows 11 x64. У Windows 10 основная поддержка Microsoft уже закончилась —
-    NEXORA сообщит об этом в отчёте как о факте, без запугивания. Стек: C#, .NET 10 LTS, WPF, штатные интерфейсы Windows (WMI/CIM, счётчики производительности, Win32 API).</p>
-
-  <footer>NEXORA · v0.1.0 · обновлено 19.10.2026 · страница появится с загрузкой, когда будет первая проверенная сборка.</footer>
+  <footer>NEXORA 0.9.0 · обновлено 19.10.2026 · <a href="guide.html">руководство пользователя</a> · программа работает локально и не отправляет данные в сеть.</footer>
 </div>
 </body>
 </html>
