@@ -63,8 +63,11 @@ public static partial class CommandLine
         return UserWritableMarkers.Any(m => p.Contains(m, StringComparison.Ordinal));
     }
 
-    [GeneratedRegex(@"(-|/)(e|ec|enc|encodedcommand)\s+[A-Za-z0-9+/=]{20,}|-w(indowstyle)?\s+h(idden)?|iex\s*\(|invoke-expression|downloadstring|downloadfile|frombase64string|invoke-webrequest|\biwr\b|start-bitstransfer", RegexOptions.IgnoreCase)]
+    [GeneratedRegex(@"(-|/)(e|ec|enc|encodedcommand)\s+[A-Za-z0-9+/=]{20,}|iex\s*\(|invoke-expression|downloadstring|downloadfile|frombase64string|invoke-webrequest|\biwr\b|start-bitstransfer", RegexOptions.IgnoreCase)]
     private static partial Regex SuspiciousPowerShell();
+
+    [GeneratedRegex(@"-w(indowstyle)?\s+h(idden)?\b", RegexOptions.IgnoreCase)]
+    private static partial Regex HiddenWindow();
 
     [GeneratedRegex(@"\b(mshta|rundll32|regsvr32)(\.exe)?\b.*\b(https?:|javascript:|vbscript:|/i:http|scrobj\.dll)", RegexOptions.IgnoreCase)]
     private static partial Regex SuspiciousLolbin();
@@ -77,7 +80,11 @@ public static partial class CommandLine
     {
         if (string.IsNullOrWhiteSpace(command)) return null;
         if (command.Contains("powershell", StringComparison.OrdinalIgnoreCase) || command.Contains("pwsh", StringComparison.OrdinalIgnoreCase))
-            if (SuspiciousPowerShell().IsMatch(command)) return "PowerShell запускается скрыто, с закодированной командой или загрузкой из сети";
+        {
+            if (SuspiciousPowerShell().IsMatch(command)) return "PowerShell запускается с закодированной командой, выполнением строки или загрузкой из сети";
+            // Скрытое окно само по себе нормально (так работают и задания Windows) — подозрительно только вместе со скриптом из пользовательской папки.
+            if (HiddenWindow().IsMatch(command) && IsUserWritableLocation(command, out _)) return "PowerShell скрыто запускает скрипт из пользовательской папки";
+        }
         if (SuspiciousLolbin().IsMatch(command)) return "системная программа (mshta/rundll32/regsvr32) запускает сценарий или адрес из сети";
         if (ScriptHost().IsMatch(command) && IsUserWritableLocation(command, out _)) return "сценарий Windows Script Host запускается из пользовательской папки";
         return null;

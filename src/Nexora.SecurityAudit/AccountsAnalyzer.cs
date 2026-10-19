@@ -109,16 +109,21 @@ public static class AccountsAnalyzer
         }
 
         var accounts = s.Accounts.IsAvailable ? s.Accounts.Value : [];
-        bool EnabledLocal(GroupMember m) => accounts.FirstOrDefault(a => a.Sid == m.Sid) is not { Enabled: false };
-        var activeUsers = admins.Members.Where(m => m.Kind == MemberKind.User && EnabledLocal(m)).ToList();
+        var users = admins.Members.Where(m => m.Kind == MemberKind.User).ToList();
+        // Состояние известно только для локальных учётных записей из списка; доменные и неизвестные не считаются «включёнными».
+        var activeUsers = users.Where(m => accounts.Any(a => a.Sid == m.Sid && a.Enabled)).ToList();
+        var unknown = users.Where(m => accounts.All(a => a.Sid != m.Sid)).ToList();
         var ev = new Evidence(SrcGroups, string.Join(", ", admins.Members.Select(m => $"{m.Name} [{m.Kind}]")));
-        var what = $"В группе «{admins.Name}»: {admins.Members.Count} членов, из них активных пользователей: {activeUsers.Count} ({string.Join(", ", activeUsers.Select(m => m.Name))}).";
+        var what = $"В группе «{admins.Name}»: {admins.Members.Count} членов, из них включённых локальных пользователей: {activeUsers.Count}" +
+                   (activeUsers.Count > 0 ? $" ({string.Join(", ", activeUsers.Select(m => m.Name))})" : "") +
+                   (unknown.Count > 0 ? $"; пользователей с неизвестным состоянием: {unknown.Count} ({string.Join(", ", unknown.Select(m => m.Name))})" : "") + ".";
+        string[] limits = s.Accounts.IsAvailable ? [] : ["Список локальных учётных записей недоступен, поэтому неизвестно, какие из членов группы включены."];
 
         yield return activeUsers.Count > MaxExpectedAdmins
             ? CheckResult.Finding(id, title, Section.Users, Severity.Medium, FindingKind.Heuristic, Confidence.Medium, what,
                 "Каждая административная учётная запись может изменить систему и отключить защиту; чем их больше, тем выше риск.",
-                "Проверьте, всем ли этим людям/программам действительно нужны права администратора.", ev)
-            : CheckResult.Ok(id, title, Section.Users, what, ev);
+                "Проверьте, всем ли этим людям/программам действительно нужны права администратора.", ev) with { Limitations = limits }
+            : CheckResult.Ok(id, title, Section.Users, what, ev, s.Accounts.IsAvailable ? Confidence.High : Confidence.Low) with { Limitations = limits };
 
         if (admins.Members.Any(m => m.Kind == MemberKind.Deleted))
             yield return CheckResult.Finding("users.admins.orphaned", "Удалённые учётные записи в «Администраторах»", Section.Users, Severity.Info,

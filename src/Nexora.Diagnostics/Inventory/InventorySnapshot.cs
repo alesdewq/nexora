@@ -60,4 +60,4 @@ public sealed record HotfixInfo(string Id, string? Description, DateTimeOffset? 
 public sealed record DriverInfo(string DeviceName, string? Version, DateTimeOffset? Date, string? Provider, bool? IsSigned);
 
 /// <summary>Устройство с ненулевым кодом ошибки диспетчера устройств (ConfigManagerErrorCode).</summary>
-public sealed record ProblemDevice(string Name, int ErrorCode);
+public sealed record ProblemDevice(string Name, int ErrorCode, string? DeviceId = null, string? DeviceClass = null);

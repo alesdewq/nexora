@@ -109,3 +109,16 @@ public class NetworkTests
         Assert.Equal(CheckStatus.Unavailable, Assert.Single(NetworkAnalyzer.Analyze(snap)).Status);
     }
 }
+
+public class FirewallServiceTests
+{
+    [Fact]
+    public void RuleScopedToAnotherService_DoesNotAllowSocket()
+    {
+        var rpc = new ListeningSocket(Protocol.Tcp, "0.0.0.0", 135, 900, "svchost", @"C:\Windows\System32\svchost.exe", ["RpcEptMapper", "RpcSs"]);
+        var wifiDirect = new FirewallRule("Wi-Fi Direct", true, true, true, 6, "*", @"%SystemRoot%\system32\svchost.exe", FirewallProfiles.Public, "WFDSConMgrSvc");
+        var dcom = new FirewallRule("DCOM", true, true, true, 6, "135", @"%SystemRoot%\system32\svchost.exe", FirewallProfiles.Private, "RpcSs");
+        Assert.Equal(FirewallProfiles.Private, FirewallMatcher.AllowedProfiles(rpc, [wifiDirect, dcom], out var m));
+        Assert.Equal("DCOM", Assert.Single(m).Name);
+    }
+}

@@ -162,12 +162,14 @@ public static class InventoryAnalyzer
             return CheckResult.Unavailable(id, title, Section.Performance, devices.Source, devices.Reason!);
         // Код 22 — устройство отключено пользователем: это не ошибка.
         var errors = list.Where(d => d.ErrorCode != 22).ToList();
-        var ev = new Evidence(devices.Source, list.Count == 0 ? "нет устройств с ненулевым кодом" : string.Join("; ", list.Select(d => $"{d.Name}: код {d.ErrorCode}")));
+        var ev = new Evidence(devices.Source, list.Count == 0 ? "нет устройств с ненулевым кодом"
+            : string.Join("; ", list.Select(d => $"{d.Name}: код {d.ErrorCode}{(d.DeviceId is null ? "" : $" [{d.DeviceId}]")}")));
         if (errors.Count == 0)
             return CheckResult.Ok(id, title, Section.Performance,
                 list.Count == 0 ? "Диспетчер устройств не сообщает об ошибках." : $"Ошибок нет; отключено вручную устройств: {list.Count}.", ev);
         return CheckResult.Finding(id, title, Section.Performance, Severity.Medium, FindingKind.Fact, Confidence.High,
-            $"Устройств с ошибками: {errors.Count} — " + string.Join(", ", errors.Take(5).Select(d => $"{d.Name} (код {d.ErrorCode})")) + ".",
+            $"Устройств с ошибками: {errors.Count} — " + string.Join(", ", errors.GroupBy(d => (d.Name, d.ErrorCode)).Take(6)
+                .Select(g => $"{g.Key.Name} ({ErrorText(g.Key.ErrorCode)}{(g.Count() > 1 ? $", ×{g.Count()}" : "")})")) + ".",
             "Неработающий драйвер может вызывать сбои, лишнюю нагрузку или отсутствие функций (например, датчиков или управления питанием).",
             "Откройте «Диспетчер устройств», посмотрите описание ошибки и установите драйвер с сайта производителя компьютера.", ev);
     }
@@ -201,6 +203,19 @@ public static class InventoryAnalyzer
                 "Современным браузерам и Windows 10/11 при обычной работе часто не хватает менее 8 ГБ памяти.",
                 "Сравните с результатами раздела «Производительность»: если память постоянно занята, добавление памяти может помочь.", ev);
     }
+
+    /// <summary>Самые частые коды диспетчера устройств.</summary>
+    public static string ErrorText(int code) => code switch
+    {
+        1 or 3 => $"код {code}: драйвер работает неправильно",
+        10 => "код 10: устройство не запускается",
+        28 => "код 28: драйвер не установлен",
+        31 => "код 31: драйвер не загружен",
+        43 => "код 43: устройство сообщило об ошибке",
+        45 => "код 45: устройство не подключено",
+        52 => "код 52: подпись драйвера не проверена",
+        _ => $"код {code}",
+    };
 
     private static string HealthText(DiskHealth h) => h switch
     {

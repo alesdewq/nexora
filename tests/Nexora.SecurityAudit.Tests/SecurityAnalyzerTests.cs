@@ -33,14 +33,18 @@ public class SecurityAnalyzerTests
     {
         var r = AccountsAnalyzer.Analyze(Snapshot(), Now).Single(r => r.Id == "users.admins");
         Assert.Equal(CheckStatus.Ok, r.Status);
-        Assert.Contains("активных пользователей: 1", r.WhatFound);
+        Assert.Contains("включённых локальных пользователей: 1", r.WhatFound);
     }
 
     [Fact]
     public void ManyAdmins_IsHeuristicNotFact()
     {
         var members = Enumerable.Range(1, 4).Select(i => new GroupMember($"u{i}", $"S-1-5-21-1-2-3-{1000 + i}", MemberKind.User)).ToList();
-        var s = Snapshot() with { Groups = Of<IReadOnlyList<GroupInfo>>([new("Administrators", GroupInfo.AdministratorsSid, members)]) };
+        var s = Snapshot() with
+        {
+            Groups = Of<IReadOnlyList<GroupInfo>>([new("Administrators", GroupInfo.AdministratorsSid, members)]),
+            Accounts = Of<IReadOnlyList<LocalAccount>>(members.Select(m => new LocalAccount(m.Name, m.Sid, true, true, null)).ToList()),
+        };
         var r = AccountsAnalyzer.Analyze(s, Now).Single(r => r.Id == "users.admins");
         Assert.Equal(FindingKind.Heuristic, r.Kind);
         Assert.Equal(Severity.Medium, r.Severity);
@@ -213,4 +217,23 @@ public class SecurityAnalyzerTests
     [InlineData(103, ThreatState.Active)]
     [InlineData(null, ThreatState.Unknown)]
     public void ThreatStatusMapping(int? id, ThreatState state) => Assert.Equal(state, MalwareAssessment.Status(id).State);
+}
+
+public class AdminsWithoutAccountListTests
+{
+    [Fact]
+    public void AccountsUnavailable_DoesNotInventEnabledAdmins()
+    {
+        var members = Enumerable.Range(1, 4).Select(i => new GroupMember($"u{i}", $"S-1-5-21-1-2-3-{1000 + i}", MemberKind.User)).ToList();
+        var s = Fakes.Snapshot() with
+        {
+            Accounts = Fakes.Na<IReadOnlyList<LocalAccount>>("отказано в доступе"),
+            Groups = Fakes.Of<IReadOnlyList<GroupInfo>>([new("Administrators", GroupInfo.AdministratorsSid, members)]),
+        };
+        var r = AccountsAnalyzer.Analyze(s, DateTimeOffset.Now).Single(x => x.Id == "users.admins");
+        Assert.Equal(CheckStatus.Ok, r.Status);
+        Assert.Equal(Confidence.Low, r.Confidence);
+        Assert.Contains("неизвестным состоянием: 4", r.WhatFound);
+        Assert.NotEmpty(r.Limitations);
+    }
 }

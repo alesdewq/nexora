@@ -24,16 +24,22 @@ public static class InventoryCollector
         {
             Os = new OsInfo
             {
-                ProductName = Probe.Try(os, () => ProductName()),
+                ProductName = Fallback(Probe.Try(os, () => ProductName()),
+                    () => Probe.Try(Reg.Source(RegistryHive.LocalMachine, CurrentVersion, "ProductName"), RegistryProductName)),
                 EditionId = Probe.Try(Reg.Source(RegistryHive.LocalMachine, CurrentVersion, "EditionID"),
                     () => Reg.Str(RegistryHive.LocalMachine, CurrentVersion, "EditionID")),
                 DisplayVersion = Probe.Try(Reg.Source(RegistryHive.LocalMachine, CurrentVersion, "DisplayVersion"),
                     () => Reg.Str(RegistryHive.LocalMachine, CurrentVersion, "DisplayVersion")),
-                Build = Probe.TryValue(os, () => int.TryParse(osObj.Value?.Str("BuildNumber"), out var b) ? b : (int?)null),
+                // Номер сборки — из реестра: он доступен любому пользователю, в том числе при запрете WMI.
+                Build = Fallback(Probe.TryValue(Reg.Source(RegistryHive.LocalMachine, CurrentVersion, "CurrentBuildNumber"),
+                        () => int.TryParse(Reg.Str(RegistryHive.LocalMachine, CurrentVersion, "CurrentBuildNumber"), out var rb) ? rb : (int?)null),
+                    () => Probe.TryValue(os, () => int.TryParse(osObj.Value?.Str("BuildNumber"), out var b) ? b : (int?)null)),
                 Ubr = Probe.TryValue(Reg.Source(RegistryHive.LocalMachine, CurrentVersion, "UBR"),
                     () => Reg.Dword(RegistryHive.LocalMachine, CurrentVersion, "UBR")),
-                Architecture = Probe.Try(os, () => osObj.Value?.Str("OSArchitecture")),
-                LastBoot = Probe.TryValue(os, () => osObj.Value?.Date("LastBootUpTime")),
+                Architecture = Fallback(Probe.Try(os, () => osObj.Value?.Str("OSArchitecture")),
+                    () => Probe.Try("Environment.Is64BitOperatingSystem", () => Environment.Is64BitOperatingSystem ? "64-разрядная" : "32-разрядная")),
+                LastBoot = Fallback(Probe.TryValue(os, () => osObj.Value?.Date("LastBootUpTime")),
+                    () => Probe.TryValue("Environment.TickCount64", () => (DateTimeOffset?)DateTimeOffset.Now.AddMilliseconds(-Environment.TickCount64))),
                 InstallDate = Probe.TryValue(os, () => osObj.Value?.Date("InstallDate")),
             },
             Computer = new ComputerInfo
@@ -46,9 +52,10 @@ public static class InventoryCollector
                 CpuName = Probe.Try(cpu, () => cpus.Value.FirstOrDefault()?.Str("Name")),
                 CpuCores = Probe.TryValue(cpu, () => cpus.Value.Count == 0 ? (int?)null : cpus.Value.Sum(c => c.Get<int>("NumberOfCores"))),
                 CpuLogicalProcessors = Probe.TryValue("Environment.ProcessorCount", () => (int?)Environment.ProcessorCount),
-                TotalMemoryBytes = Probe.TryValue(cs, () => csObj.Value?.Get<long?>("TotalPhysicalMemory")),
+                TotalMemoryBytes = Fallback(Probe.TryValue(cs, () => csObj.Value?.Get<long?>("TotalPhysicalMemory")),
+                    () => Probe.TryValue("Win32 GlobalMemoryStatusEx", TotalPhysicalMemory)),
             },
-            LogicalDisks = Probe.List(Wmi.Source(Wmi.Cimv2, "Win32_LogicalDisk"), LogicalDisks),
+            LogicalDisks = Probe.List("System.IO.DriveInfo (локальные несъёмные диски)", LogicalDisks),
             PhysicalDisks = Probe.List(Wmi.Source(Wmi.Storage, "MSFT_PhysicalDisk"), PhysicalDisks),
             NetworkAdapters = Probe.List(Wmi.Source(Wmi.Cimv2, "Win32_NetworkAdapterConfiguration"), Adapters),
             Programs = Probe.List(@"Реестр ...\CurrentVersion\Uninstall (HKLM 64/32, HKCU)", InstalledPrograms.Read),
@@ -59,6 +66,28 @@ public static class InventoryCollector
             ProblemDevices = Probe.List(Wmi.Source(Wmi.Cimv2, "Win32_PnPEntity"), ProblemDevices),
             RebootPending = Probe.TryValue("Реестр: Component Based Servicing\\RebootPending, WindowsUpdate\\Auto Update\\RebootRequired", () => (bool?)RebootPending()),
         };
+    }
+
+    /// <summary>Если основной источник недоступен — запасной; если недоступны оба, причина берётся из основного.</summary>
+    private static Measured<T> Fallback<T>(Measured<T> primary, Func<Measured<T>> secondary)
+    {
+        if (primary.IsAvailable) return primary;
+        var s = secondary();
+        return s.IsAvailable ? s : primary;
+    }
+
+    private static string? RegistryProductName()
+    {
+        var name = Reg.Str(RegistryHive.LocalMachine, CurrentVersion, "ProductName");
+        // В реестре Windows 11 по-прежнему пишет «Windows 10 …».
+        return int.TryParse(Reg.Str(RegistryHive.LocalMachine, CurrentVersion, "CurrentBuildNumber"), out var b) && WindowsLifecycle.IsWindows11(b)
+            ? name?.Replace("Windows 10", "Windows 11", StringComparison.Ordinal) : name;
+    }
+
+    private static long? TotalPhysicalMemory()
+    {
+        var m = new Native.MEMORYSTATUSEX { Length = (uint)System.Runtime.InteropServices.Marshal.SizeOf<Native.MEMORYSTATUSEX>() };
+        return Native.GlobalMemoryStatusEx(ref m) ? (long)m.TotalPhys : null;
     }
 
     private static string? ProductName()
@@ -81,10 +110,19 @@ public static class InventoryCollector
     private static IEnumerable<LogicalDiskInfo> LogicalDisks()
     {
         var sys = (Environment.GetEnvironmentVariable("SystemDrive") ?? "C:").TrimEnd('\\');
-        return Wmi.Query(Wmi.Cimv2, "SELECT DeviceID, FileSystem, Size, FreeSpace FROM Win32_LogicalDisk WHERE DriveType = 3")
-            .Select(d => new LogicalDiskInfo(d.Str("DeviceID") ?? "?", d.Str("FileSystem"),
-                (long)(d.Get<ulong?>("Size") ?? 0), (long)(d.Get<ulong?>("FreeSpace") ?? 0),
-                string.Equals(d.Str("DeviceID"), sys, StringComparison.OrdinalIgnoreCase)));
+        foreach (var d in DriveInfo.GetDrives().Where(d => d.DriveType == DriveType.Fixed))
+        {
+            LogicalDiskInfo? info;
+            try
+            {
+                var name = d.Name.TrimEnd('\\');
+                info = d.IsReady ? new LogicalDiskInfo(name, d.DriveFormat, d.TotalSize, d.TotalFreeSpace,
+                    string.Equals(name, sys, StringComparison.OrdinalIgnoreCase)) : null;
+            }
+            catch (IOException) { info = null; }
+            catch (UnauthorizedAccessException) { info = null; }
+            if (info is not null) yield return info;
+        }
     }
 
     private static IEnumerable<PhysicalDiskInfo> PhysicalDisks() =>
@@ -130,8 +168,9 @@ public static class InventoryCollector
             .Select(d => new DriverInfo(d.Str("DeviceName")!, d.Str("DriverVersion"), d.Date("DriverDate"), d.Str("DriverProviderName"), d.Get<bool?>("IsSigned")));
 
     private static IEnumerable<ProblemDevice> ProblemDevices() =>
-        Wmi.Query(Wmi.Cimv2, "SELECT Name, ConfigManagerErrorCode FROM Win32_PnPEntity WHERE ConfigManagerErrorCode <> 0")
-            .Select(d => new ProblemDevice(d.Str("Name") ?? "устройство без имени", (int)(d.Get<uint?>("ConfigManagerErrorCode") ?? 0)));
+        Wmi.Query(Wmi.Cimv2, "SELECT Name, ConfigManagerErrorCode, PNPDeviceID, PNPClass FROM Win32_PnPEntity WHERE ConfigManagerErrorCode <> 0")
+            .Select(d => new ProblemDevice(d.Str("Name") ?? $"неизвестное устройство{(d.Str("PNPClass") is { } c ? $" ({c})" : "")}",
+                (int)(d.Get<uint?>("ConfigManagerErrorCode") ?? 0), d.Str("PNPDeviceID"), d.Str("PNPClass")));
 
     private static bool RebootPending() =>
         Reg.KeyExists(RegistryHive.LocalMachine, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending")

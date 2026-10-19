@@ -10,6 +10,12 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
+        if (e.Args.Contains("--scan"))
+        {
+            Shutdown(await CliScan.RunAsync(e.Args));
+            return;
+        }
+
         var vm = new MainViewModel();
         var window = new MainWindow { DataContext = vm };
 

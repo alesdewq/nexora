@@ -38,11 +38,16 @@ public static class FirewallMatcher
     {
         matched = rules.Where(r => r.Enabled && r.Inbound && r.Allow && ProtocolMatches(r.Protocol, s.Protocol)
                                    && PortMatches(r.LocalPorts, s.Port) && ApplicationMatches(r.Application, s.ProcessPath)
-                                   // правило без порта и без программы (например, «разрешить всё для службы») — учитываем, только если указана служба этого процесса
-                                   && !(IsAny(r.LocalPorts) && IsAny(r.Application) && (r.Service is null || !s.Services.Contains(r.Service, StringComparer.OrdinalIgnoreCase))))
+                                   && ServiceMatches(r.Service, s.Services)
+                                   // правило «любой порт, любая программа» без службы — это не разрешение конкретного сокета
+                                   && !(IsAny(r.LocalPorts) && IsAny(r.Application) && IsAny(r.Service)))
             .ToList();
         return matched.Aggregate(FirewallProfiles.None, (acc, r) => acc | r.Profiles);
     }
+
+    /// <summary>Правило, привязанное к службе, действует только для этой службы (в одном svchost их бывает несколько).</summary>
+    public static bool ServiceMatches(string? ruleService, IReadOnlyList<string> socketServices) =>
+        IsAny(ruleService) || socketServices.Contains(ruleService!.Trim(), StringComparer.OrdinalIgnoreCase);
 
     private static bool IsAny(string? v) => string.IsNullOrWhiteSpace(v) || v.Trim() == "*";
 }
