@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Модели снимков (инвентаризация, производительность) и анализ без обращений к системе. Сбор — в Nexora.Platform. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Nexora.Core\Nexora.Core.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,9 +1,12 @@
 <Project>
-  <!-- Версии зафиксированы. Рантайм-зависимостей нет; пакеты ниже — только для тестов (MIT / Apache-2.0). -->
+  <!-- Версии зафиксированы. Рантайм: только пакеты Microsoft (MIT). Тесты: xUnit (Apache-2.0), Test SDK (MIT). -->
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
+    <!-- Microsoft, MIT: чтение WMI и журналов событий (Nexora.Platform) -->
+    <PackageVersion Include="System.Management" Version="10.0.0" />
+    <PackageVersion Include="System.Diagnostics.EventLog" Version="10.0.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
     <PackageVersion Include="xunit.v3" Version="4.0.2" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="4.0.1" />
