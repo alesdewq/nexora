@@ -1,0 +1,15 @@
+<Project>
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <WarningsAsErrors>nullable</WarningsAsErrors>
+    <Deterministic>true</Deterministic>
+    <Company>NEXORA</Company>
+    <Product>NEXORA</Product>
+    <Version>0.1.0</Version>
+    <NeutralLanguage>ru-RU</NeutralLanguage>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Nexora.Core/Nexora.Core.csproj" />
+    <Project Path="src/Nexora.App/Nexora.App.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Nexora.Core.Tests/Nexora.Core.Tests.csproj" />
+  </Folder>
+</Solution>

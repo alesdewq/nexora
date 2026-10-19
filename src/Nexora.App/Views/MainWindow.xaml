@@ -1,0 +1,76 @@
+<Window x:Class="Nexora.App.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="NEXORA" Width="1180" Height="760" MinWidth="820" MinHeight="520"
+        Background="{StaticResource Bg}" FontFamily="Segoe UI" FontSize="14"
+        WindowStartupLocation="CenterScreen">
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="232"/>
+      <ColumnDefinition Width="*"/>
+    </Grid.ColumnDefinitions>
+
+    <DockPanel Background="{StaticResource NavBg}">
+      <StackPanel DockPanel.Dock="Top" Margin="20,22,20,18">
+        <TextBlock Text="NEXORA" FontSize="22" FontWeight="SemiBold" Foreground="White"/>
+        <TextBlock Text="Диагностика Windows" Foreground="{StaticResource NavText}" FontSize="12" Margin="0,2,0,0"/>
+      </StackPanel>
+      <TextBlock DockPanel.Dock="Bottom" Text="{Binding VersionText}" Foreground="#6B7280" FontSize="11" Margin="20,0,20,16"/>
+      <ListBox ItemsSource="{Binding Sections}" SelectedItem="{Binding Selected}" Background="Transparent" BorderThickness="0"
+               ScrollViewer.HorizontalScrollBarVisibility="Disabled" AutomationProperties.Name="Разделы">
+        <ListBox.ItemContainerStyle>
+          <Style TargetType="ListBoxItem">
+            <Setter Property="Template">
+              <Setter.Value>
+                <ControlTemplate TargetType="ListBoxItem">
+                  <Border x:Name="Bd" Margin="10,1" Padding="12,9" CornerRadius="6" Background="Transparent">
+                    <ContentPresenter/>
+                  </Border>
+                  <ControlTemplate.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                      <Setter TargetName="Bd" Property="Background" Value="#18212F"/>
+                    </Trigger>
+                    <Trigger Property="IsSelected" Value="True">
+                      <Setter TargetName="Bd" Property="Background" Value="{StaticResource NavSelected}"/>
+                    </Trigger>
+                  </ControlTemplate.Triggers>
+                </ControlTemplate>
+              </Setter.Value>
+            </Setter>
+            <Setter Property="AutomationProperties.Name" Value="{Binding Title}"/>
+          </Style>
+        </ListBox.ItemContainerStyle>
+        <ListBox.ItemTemplate>
+          <DataTemplate>
+            <StackPanel Orientation="Horizontal">
+              <TextBlock Text="{Binding Icon}" FontFamily="Segoe MDL2 Assets" FontSize="15" Width="26"
+                         Foreground="{StaticResource NavText}" VerticalAlignment="Center"/>
+              <TextBlock Text="{Binding Title}" Foreground="White" VerticalAlignment="Center"/>
+            </StackPanel>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </DockPanel>
+
+    <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+      <StackPanel Margin="36,30,36,30" MaxWidth="880" HorizontalAlignment="Left">
+        <TextBlock Text="{Binding Selected.Title}" FontSize="28" FontWeight="SemiBold"/>
+        <TextBlock Text="{Binding Selected.Purpose}" Foreground="{StaticResource Muted}" FontSize="15" Margin="0,6,0,22"/>
+
+        <Border Background="{StaticResource WarnBg}" CornerRadius="8" Padding="16,12" Margin="0,0,0,16">
+          <TextBlock Text="{Binding Selected.StatusText}" Foreground="{StaticResource Warn}"/>
+        </Border>
+
+        <Border Background="{StaticResource Surface}" BorderBrush="{StaticResource Border}" BorderThickness="1" CornerRadius="10" Padding="20,16">
+          <StackPanel>
+            <TextBlock Text="Итог проверки" FontWeight="SemiBold" Margin="0,0,0,6"/>
+            <TextBlock Text="{Binding Summary}" Foreground="{StaticResource Muted}"/>
+          </StackPanel>
+        </Border>
+
+        <TextBlock Margin="0,22,0,0" Foreground="{StaticResource Muted}" FontSize="12.5"
+                   Text="NEXORA не меняет систему без вашего явного подтверждения и не отправляет данные в сеть. Отсутствие замечаний не означает, что компьютер безопасен."/>
+      </StackPanel>
+    </ScrollViewer>
+  </Grid>
+</Window>

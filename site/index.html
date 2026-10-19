@@ -48,7 +48,7 @@
   th{color:var(--faint);font-weight:500;font-size:13px}
   td:first-child{font-family:var(--mono);color:var(--faint);width:36px}
   .st{font-size:12px;padding:2px 8px;border-radius:999px;white-space:nowrap;background:var(--surface-2);color:var(--muted)}
-  .st.now{background:rgba(251,191,36,.14);color:var(--warn)} .st.lock{background:rgba(248,113,113,.12);color:var(--crit)}
+  .st.now{background:rgba(251,191,36,.14);color:var(--warn)} .st.done{background:rgba(74,222,128,.12);color:var(--ok)} .st.lock{background:rgba(248,113,113,.12);color:var(--crit)}
   .tbl{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow-x:auto}
   .note{margin-top:14px;font-size:14px;color:var(--faint)}
   footer{margin:64px 0 32px;padding-top:20px;border-top:1px solid var(--border);font-size:13px;color:var(--faint)}
@@ -65,7 +65,7 @@
     <h1><span>NEXORA</span></h1>
     <p class="lead">Офлайн-приложение для Windows 10/11: почему компьютер тормозит и греется, что в нём установлено
       и насколько базово защищена система — с честным отчётом, где факт отделён от подозрения.</p>
-    <div class="pill"><i></i>В разработке · Этап 0 из 9: план и архитектура · скачать пока нечего</div>
+    <div class="pill"><i></i>В разработке · готов этап 1 из 9: каркас приложения · скачать пока нечего</div>
   </header>
 
   <h2>Что будет проверять</h2>
@@ -101,9 +101,9 @@
   <div class="tbl"><table>
     <thead><tr><th>#</th><th>Этап</th><th>Статус</th></tr></thead>
     <tbody>
-      <tr><td>0</td><td>План, архитектура, документация</td><td><span class="st now">в работе</span></td></tr>
-      <tr><td>1</td><td>Каркас WPF-приложения, сборка и тесты</td><td><span class="st">ожидает</span></td></tr>
-      <tr><td>2</td><td>Инвентаризация системы (только чтение)</td><td><span class="st">ожидает</span></td></tr>
+      <tr><td>0</td><td>План, архитектура, документация</td><td><span class="st done">готово</span></td></tr>
+      <tr><td>1</td><td>Каркас WPF-приложения, сборка и тесты</td><td><span class="st done">готово</span></td></tr>
+      <tr><td>2</td><td>Инвентаризация системы (только чтение)</td><td><span class="st now">следующий</span></td></tr>
       <tr><td>3</td><td>Производительность и процессы</td><td><span class="st">ожидает</span></td></tr>
       <tr><td>4</td><td>Пользователи, группы, базовая безопасность</td><td><span class="st">ожидает</span></td></tr>
       <tr><td>5</td><td>Локальный сетевой аудит</td><td><span class="st">ожидает</span></td></tr>
@@ -115,10 +115,10 @@
   </table></div>
 
   <h2>Платформа</h2>
-  <p style="color:var(--muted);margin:0">Windows 11 x64 — основная цель; Windows 10 22H2 — будет работать, но эта версия уже вне основной поддержки Microsoft,
-    и NEXORA честно отметит это в отчёте. Стек: C#, .NET 10 LTS, WPF, штатные интерфейсы Windows (WMI/CIM, счётчики производительности, Win32 API).</p>
+  <p style="color:var(--muted);margin:0">Windows 10 22H2 и Windows 11 x64. У Windows 10 основная поддержка Microsoft уже закончилась —
+    NEXORA сообщит об этом в отчёте как о факте, без запугивания. Стек: C#, .NET 10 LTS, WPF, штатные интерфейсы Windows (WMI/CIM, счётчики производительности, Win32 API).</p>
 
-  <footer>NEXORA · обновлено 19.10.2026 · страница появится с загрузкой, когда будет первая проверенная сборка.</footer>
+  <footer>NEXORA · v0.1.0 · обновлено 19.10.2026 · страница появится с загрузкой, когда будет первая проверенная сборка.</footer>
 </div>
 </body>
 </html>
