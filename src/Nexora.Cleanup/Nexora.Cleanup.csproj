@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Этап 7: предпросмотр кандидатов на очистку (только чтение). Этап 8: проверка путей и исполнение подтверждённого плана
+       через внедряемый IFileRemover — сама библиотека файлы не удаляет. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Nexora.Core\Nexora.Core.csproj" />
+  </ItemGroup>
+</Project>

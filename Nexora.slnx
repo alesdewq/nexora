@@ -4,6 +4,7 @@
     <Project Path="src/Nexora.Diagnostics/Nexora.Diagnostics.csproj" />
     <Project Path="src/Nexora.SecurityAudit/Nexora.SecurityAudit.csproj" />
     <Project Path="src/Nexora.NetworkAudit/Nexora.NetworkAudit.csproj" />
+    <Project Path="src/Nexora.Cleanup/Nexora.Cleanup.csproj" />
     <Project Path="src/Nexora.Reporting/Nexora.Reporting.csproj" />
     <Project Path="src/Nexora.Platform/Nexora.Platform.csproj" />
     <Project Path="src/Nexora.App/Nexora.App.csproj" />
@@ -13,6 +14,7 @@
     <Project Path="tests/Nexora.Diagnostics.Tests/Nexora.Diagnostics.Tests.csproj" />
     <Project Path="tests/Nexora.SecurityAudit.Tests/Nexora.SecurityAudit.Tests.csproj" />
     <Project Path="tests/Nexora.NetworkAudit.Tests/Nexora.NetworkAudit.Tests.csproj" />
+    <Project Path="tests/Nexora.Cleanup.Tests/Nexora.Cleanup.Tests.csproj" />
     <Project Path="tests/Nexora.Reporting.Tests/Nexora.Reporting.Tests.csproj" />
     <Project Path="tests/Nexora.Platform.Tests/Nexora.Platform.Tests.csproj" />
   </Folder>
