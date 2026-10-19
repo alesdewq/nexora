@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Отчёты HTML/JSON, маскирование чувствительных данных, сравнение и локальная история. Без сети. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Nexora.Core\Nexora.Core.csproj" />
+  </ItemGroup>
+</Project>
