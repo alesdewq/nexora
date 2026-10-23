@@ -2,6 +2,7 @@
 
 > **EN:** Read-only Windows 10/11 diagnostics and basic security audit (C# / .NET 10, WPF): performance, inventory,
 > Defender/firewall/UAC/BitLocker/RDP checks, listening ports → process → firewall rule, HTML/JSON reports. 220 unit tests.
+> Built with an AI coding assistant (Claude Code) under my direction - see [How it was built](#как-разработан).
 
 Настольное приложение для Windows 10/11 x64: почему компьютер тормозит и греется, что в нём установлено и насколько
 базово защищена система — с честным отчётом, где факт отделён от подозрения.
@@ -32,6 +33,13 @@ src\Nexora.App\bin\Debug\net10.0-windows\win-x64\Nexora.exe --scan artifacts\sca
 powershell -ExecutionPolicy Bypass -File build\run-limited.ps1 -Arguments "--scan C:\out" -WaitFor C:\out\scan.log   # без прав администратора
 ```
 С VPS: `build/sync-and-run.sh '<команда>'` синхронизирует исходники на ноутбук и выполняет команду там.
+
+## Как разработан
+
+NEXORA сделана **с помощью ИИ-ассистента** (Claude Code). Мои задачи — идея и требования (ТЗ), принципы безопасности
+(только чтение, изменения только по подтверждению, никаких данных в сеть), поэтапный план, проверка на реальном ноутбуке
+и решения по ходу разработки. Код, тесты и большую часть документации писал ИИ-агент по этим требованиям.
+Ход работы по этапам — в [logs/development/](logs/development/) и [tasks/](tasks/).
 
 ## Структура
 `src/` — Core (модели, оценка), Diagnostics, SecurityAudit (+Malware), NetworkAudit, Cleanup, Reporting (без обращений к системе,
