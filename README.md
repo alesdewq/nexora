@@ -1,5 +1,8 @@
 # NEXORA
 
+> **EN:** Read-only Windows 10/11 diagnostics and basic security audit (C# / .NET 10, WPF): performance, inventory,
+> Defender/firewall/UAC/BitLocker/RDP checks, listening ports → process → firewall rule, HTML/JSON reports. 220 unit tests.
+
 Настольное приложение для Windows 10/11 x64: почему компьютер тормозит и греется, что в нём установлено и насколько
 базово защищена система — с честным отчётом, где факт отделён от подозрения.
 
@@ -35,4 +38,4 @@ powershell -ExecutionPolicy Bypass -File build\run-limited.ps1 -Arguments "--sca
 тестируются на синтетических данных), Platform (сбор с Windows и действия этапа 8), App (WPF). `tests/` — 8 тестовых проектов.
 Подробно — [ARCHITECTURE](docs/ARCHITECTURE.md), [SECURITY](docs/SECURITY.md), [USER_GUIDE](docs/USER_GUIDE.md).
 
-Код не опубликован на GitHub (по правилам проекта — только с разрешения владельца). Лицензия проекта не выбрана.
+Исходный код открыт в этом репозитории. Лицензия пока не выбрана — все права защищены.
